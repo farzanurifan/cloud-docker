@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/farzanurifan/bdt-mongodb.git"
+    "url": "git+https://github.com/farzanurifan/cloud-docker.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/farzanurifan/bdt-mongodb/issues"
+    "url": "https://github.com/farzanurifan/cloud-docker/issues"
   },
-  "homepage": "https://github.com/farzanurifan/bdt-mongodb#readme",
+  "homepage": "https://github.com/farzanurifan/cloud-docker#readme",
   "dependencies": {
     "body-parser": "^1.18.3",
     "ejs": "^2.6.1",
