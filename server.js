@@ -10,9 +10,9 @@ const MongoClient = require('mongodb').MongoClient
 const ObjectId = require('mongodb').ObjectID
 
 // MongoDB config
-const uri = ['mongodb://192.168.33.10:27017', 'mongodb://192.168.33.11:27017', 'mongodb://192.168.33.12:27017']
+const uri = 'mongodb+srv://farzanurifan:bismillah@bdt-6ij3v.mongodb.net/test'
 const database = 'bdt'
-const table = 'nba_of_the_week'
+const table = 'nba'
 
 // EJS view variables
 const pageItem = 10 // Items per page on table
@@ -34,26 +34,10 @@ app.use(partials())
 
 // Database connection
 var db
-let i = 0
-const connect = (uri, i) => MongoClient.connect(uri[i], { useNewUrlParser: true, }, (err, client) => {
+MongoClient.connect(uri, { useNewUrlParser: true, }, (err, client) => {
     logError(err)
-    if (err) {
-        i += 1
-        if (i == 3) i = 0
-        return connect(uri, i)
-    }
     db = client.db(database)
-    db.collection(table).find().count((err, results) => {
-        if (results == null) {
-            i += 1
-            if (i == 3) i = 0
-            return connect(uri, i)
-        }
-    })
 })
-
-// Start connecting
-connect(uri, i)
 
 // Table pagination settings
 const pagination = (results, page) => {
