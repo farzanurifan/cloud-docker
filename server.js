@@ -71,7 +71,7 @@ app.get('/page/:page', (req, res) => {
     db.collection(table).find().count((err, results) => {
         var paginate = pagination(results, page)
         db.collection(table).find().skip(pageItem * (page - 1)).limit(pageItem).toArray((err, results) => {
-            res.render('index.ejs', { results, page, ...paginate, fields })
+            res.render('index.ejs', { results, page, first: paginate.first, pages: paginate.pages, last: paginate.last, fields })
         })
     })
 })
