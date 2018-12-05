@@ -33,10 +33,10 @@ app.use(partials())
 
 // Storage config
 var Storage = multer.diskStorage({
-    destination: function (req, file, callback) {
+    destination: (req, file, callback) => {
         callback(null, './data');
     },
-    filename: function (req, file, callback) {
+    filename: (req, file, callback) => {
         callback(null, file.originalname);
     }
 });
@@ -137,8 +137,8 @@ app.get('/download/:filename', (req, res) => {
     res.download(file);
 })
 
-app.post('/api/upload', function (req, res) {
-    upload(req, res, function (err) {
+app.post('/api/upload', (req, res) => {
+    upload(req, res, (err) => {
         logError(err)
         console.log('file uploaded');
         res.redirect('/')
