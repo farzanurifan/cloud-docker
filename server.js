@@ -10,6 +10,7 @@ const MongoClient = require('mongodb').MongoClient
 const ObjectId = require('mongodb').ObjectID
 const multer = require('multer')
 const fs = require('fs')
+const getSize = require('get-folder-size')
 
 // MongoDB config
 const uri = 'mongodb+srv://farzanurifan:bismillah@bdt-6ij3v.mongodb.net/test'
@@ -34,16 +35,16 @@ app.use(partials())
 // Storage config
 var Storage = multer.diskStorage({
     destination: (req, file, callback) => {
-        callback(null, './data');
+        callback(null, './data')
     },
     filename: (req, file, callback) => {
-        callback(null, file.originalname);
+        callback(null, file.originalname)
     }
-});
+})
 
 var upload = multer({
     storage: Storage
-}).array('fileUploader', 3); //Field name and max count
+}).array('fileUploader', 3) //Field name and max count
 
 // Database connection
 var db
@@ -83,27 +84,39 @@ app.get('/page/:page', (req, res) => {
     var page = Number(req.params.page)
     let results = []
     let stats = null
-    fs.readdir('./data', (err, files) => {
-        for (let i = 0; i < files.length; i++) {
-            stats = fs.statSync(`./data/${files[i]}`)
-            results[i] = {
-                size: stats['size'],
-                filename: files[i]
+    let size = ''
+    getSize('./data', (err, folderSize) => {
+        logError(err)
+        size = (folderSize / 1024 / 1024).toFixed(2) + ' MB'
+        fs.readdir('./data', (err, files) => {
+            for (let i = 0; i < files.length; i++) {
+                stats = fs.statSync(`./data/${files[i]}`)
+                results[i] = {
+                    size: stats['size'],
+                    filename: files[i]
+                }
             }
-        }
-        var paginate = pagination(files.length, page)
-        res.render('index.ejs', { results, page, first: paginate.first, pages: paginate.pages, last: paginate.last, fields })
+            var paginate = pagination(files.length, page)
+            res.render('index.ejs', { results, page, first: paginate.first, pages: paginate.pages, last: paginate.last, fields, size })
+        })
     })
 })
 
 app.get('/add', (req, res) => res.render('add.ejs', { fields }))
 
-app.post('/create', (req, res) => {
-    db.collection(table).save(req.body, (err, result) => {
+app.post('/api/upload', (req, res) => {
+    upload(req, res, (err) => {
         logError(err)
-        console.log('saved to database')
+        console.log('file uploaded')
         res.redirect('/')
     })
+})
+
+app.get('/download/:filename', (req, res) => {
+    var filename = req.params.filename
+    console.log(`${filename} downloaded`)
+    var file = `${filename}`
+    res.download(file)
 })
 
 app.get('/edit/:filename', (req, res) => {
@@ -111,36 +124,21 @@ app.get('/edit/:filename', (req, res) => {
     res.render('edit.ejs', { result: { filename }, fields: ['filename'] })
 })
 
-app.put('/update/:filename', (req, res) => {
+app.put('/api/update/:filename', (req, res) => {
     var filename = req.params.filename
     var newFilename = req.body.filename
     fs.rename(`./data/${filename}`, `./data/${newFilename}`, (err) => {
         logError(err)
-        console.log(`./data/${filename} was renamed to ${newFilename}`);
+        console.log(`${filename} was renamed to ${newFilename}`)
         res.redirect('/')
-    });
+    })
 })
 
-app.delete('/delete/:filename', (req, res) => {
+app.delete('/api/delete/:filename', (req, res) => {
     var filename = req.params.filename
     fs.unlink(`./data/${filename}`, (err) => {
         logError(err)
-        console.log(`./data/${filename} was deleted`);
+        console.log(`${filename} was deleted`)
         res.redirect('/')
-    });
+    })
 })
-
-app.get('/download/:filename', (req, res) => {
-    var filename = req.params.filename
-    console.log(`${filename} downloaded`);
-    var file = `./data/${filename}`;
-    res.download(file);
-})
-
-app.post('/api/upload', (req, res) => {
-    upload(req, res, (err) => {
-        logError(err)
-        console.log('file uploaded');
-        res.redirect('/')
-    });
-});
