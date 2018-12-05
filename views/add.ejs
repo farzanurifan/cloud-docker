@@ -1,14 +1,29 @@
 <a href='/' class='button is-danger is-small' style='margin-bottom: 2em'>
     Back
 </a>
-<form action='/create' method='POST' style="max-width: 500px">
-    <% for(var j=0; j<fields.length; j++) {%>
-        <div class='field'>
-            <label class="label"><%= fields[j] %></label>
-            <div class='control'>
-                <input class='input' type='text' placeholder='<%= fields[j] %>' name='<%= fields[j] %>'>
-            </div>
-        </div>
-    <% } %>
-    <button type='submit' class='button is-success is-small'>Submit</button>
+<form id="frmUploader" enctype="multipart/form-data" action="api/Upload/" method="post">
+    <div class="file has-name is-boxed">
+        <label class="file-label">
+            <input class="file-input" type="file" name="fileUploader" id="fileUploader" onchange="myFunction()">
+            <span class="file-cta">
+            <span class="file-icon">
+                <i class="fas fa-upload"></i>
+            </span>
+            <span class="file-label">
+                Choose a file…
+            </span>
+            </span>
+            <span class="file-name" id="namefile">
+            </span>
+        </label>
+    </div>
+    <br>
+    <input type="submit" name="submit" class='button is-success is-small' value="Upload" />
 </form>
+
+<script type="text/javascript">
+    function myFunction(){
+        var filename = document.getElementById("fileUploader");
+        document.getElementById("namefile").innerHTML=filename.value.replace(/^.*\\/, "");
+    }
+</script>
