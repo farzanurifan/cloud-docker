@@ -115,7 +115,7 @@ app.post('/api/upload', (req, res) => {
 app.get('/download/:filename', (req, res) => {
     var filename = req.params.filename
     console.log(`${filename} downloaded`)
-    var file = `${filename}`
+    var file = `./data/${filename}`
     res.download(file)
 })
 
