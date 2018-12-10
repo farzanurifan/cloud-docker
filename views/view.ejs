@@ -14,12 +14,10 @@
 </form>
 <% if(filename != 'coba.mp4') { %>
     <div>
-        <img src='<%= '/' + idUser + '/' + filename  %>'
-    
+        <img src='<%= '/' + idUser + '/' + filename  %>'    
     </div>
-    <% } else { %>
-
+<% } else { %>
     <video controls autoplay>
         <source src='<%= '/' + idUser + '/' + filename  %>' type="video/mp4">
-      </video> 
-      <% } %>
+    </video> 
+<% } %>
