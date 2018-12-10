@@ -15,9 +15,10 @@ const request = require('request')
 const cookieParser = require('cookie-parser')
 
 // MongoDB config
-const uri = 'mongodb+srv://farzanurifan:bismillah@bdt-6ij3v.mongodb.net/test'
+
+const uri = 'mongodb://localhost:27017'
 const database = 'cloud'
-const table = 'user'
+const table = 'myGallery'
 
 // EJS view variables
 const pageItem = 10 // Items per page on table
