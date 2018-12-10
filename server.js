@@ -124,6 +124,43 @@ app.get('/edit/:filename', (req, res) => {
     res.render('edit.ejs', { result: { filename }, fields: ['filename'] })
 })
 
+
+// API
+
+app.post('/api/login', (req, res) => {
+    var email = req.body.email
+    var password = req.body.password
+
+    db.collection(table).find({ email }).toArray((err, results) => {
+        result = results[0]
+        if (!result) return res.redirect('/')
+        loggedIn = passwordHash.verify(password, result.password)
+        if (loggedIn) console.log('logged in')
+        else console.log('failed to log in')
+        res.redirect('/')
+    })
+})
+
+app.post('/api/register', (req, res) => {
+    var name = req.body.name
+    var email = req.body.email
+    var password = passwordHash.generate(req.body.password)
+    var data = { name, email, password }
+    db.collection(table).save(data, (err, result) => {
+        logError(err)
+        console.log('saved to database')
+        res.redirect('/')
+    })
+})
+
+app.post('/api/upload', (req, res) => {
+    upload(req, res, (err) => {
+        logError(err)
+        console.log('file uploaded')
+        res.redirect('/')
+    })
+})
+
 app.put('/api/update/:filename', (req, res) => {
     var filename = req.params.filename
     var newFilename = req.body.filename
