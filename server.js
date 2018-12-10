@@ -7,19 +7,22 @@ const methodOverride = require('method-override')
 const express = require('express')
 const partials = require('express-partials')
 const MongoClient = require('mongodb').MongoClient
-const ObjectId = require('mongodb').ObjectID
 const multer = require('multer')
 const fs = require('fs')
 const getSize = require('get-folder-size')
+const passwordHash = require('password-hash')
 
 // MongoDB config
 const uri = 'mongodb+srv://farzanurifan:bismillah@bdt-6ij3v.mongodb.net/test'
 const database = 'bdt'
-const table = 'nba'
+const table = 'user'
 
 // EJS view variables
 const pageItem = 10 // Items per page on table
 const fields = ['filename', 'size']
+
+// Login variable
+let loggedIn = false
 
 // Log
 const logError = (err) => { if (err) return console.log(err) }
@@ -77,10 +80,14 @@ app.listen(3000, () => console.log('listening on 3000'))
 
 
 // Routing //
+app.get('/login', (req, res) => res.render('login.ejs'))
+
+app.get('/register', (req, res) => res.render('register.ejs'))
 
 app.get('/', (req, res) => res.redirect('/page/1'))
 
 app.get('/page/:page', (req, res) => {
+    if (!loggedIn) res.redirect('/login')
     var page = Number(req.params.page)
     let results = []
     let stats = null
@@ -102,17 +109,13 @@ app.get('/page/:page', (req, res) => {
     })
 })
 
-app.get('/add', (req, res) => res.render('add.ejs', { fields }))
-
-app.post('/api/upload', (req, res) => {
-    upload(req, res, (err) => {
-        logError(err)
-        console.log('file uploaded')
-        res.redirect('/')
-    })
+app.get('/add', (req, res) => {
+    if (!loggedIn) res.redirect('/login')
+    res.render('add.ejs', { fields })
 })
 
 app.get('/download/:filename', (req, res) => {
+    if (!loggedIn) res.redirect('/login')
     var filename = req.params.filename
     console.log(`${filename} downloaded`)
     var file = `./data/${filename}`
@@ -120,6 +123,7 @@ app.get('/download/:filename', (req, res) => {
 })
 
 app.get('/edit/:filename', (req, res) => {
+    if (!loggedIn) res.redirect('/login')
     var filename = req.params.filename
     res.render('edit.ejs', { result: { filename }, fields: ['filename'] })
 })
