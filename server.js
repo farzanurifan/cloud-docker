@@ -100,8 +100,7 @@ app.get('/register', (req, res) => res.render('register.ejs', { loggedInStatus }
 app.get('/', (req, res) => res.redirect('/page/1'))
 
 app.get('/page/:page', (req, res) => {
-    console.log(req.cookies.login_cloud)
-    if (!loggedIn) res.redirect('/login')
+    if (!req.cookies.login_cloud) res.redirect('/login')
     var page = Number(req.params.page)
     let results = []
     let stats = null
@@ -136,12 +135,12 @@ app.get('/page/:page', (req, res) => {
 })
 
 app.get('/add', (req, res) => {
-    if (!loggedIn) res.redirect('/login')
+    if (!req.cookies.login_cloud) res.redirect('/login')
     res.render('add.ejs', { fields, loggedInStatus })
 })
 
 app.get('/download/:filename', (req, res) => {
-    if (!loggedIn) res.redirect('/login')
+    if (!req.cookies.login_cloud) res.redirect('/login')
     var filename = req.params.filename
     console.log(`${filename} downloaded`)
     var file = `${dir}/${filename}`
@@ -149,7 +148,7 @@ app.get('/download/:filename', (req, res) => {
 })
 
 app.get('/edit/:filename', (req, res) => {
-    if (!loggedIn) res.redirect('/login')
+    if (!req.cookies.login_cloud) res.redirect('/login')
     var filename = req.params.filename
     res.render('edit.ejs', { result: { filename }, fields: ['filename'], loggedInStatus })
 })
