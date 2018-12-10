@@ -35,6 +35,7 @@ app.use(methodOverride('_method'))
 app.set('view engine', 'ejs')
 app.use(partials())
 app.use(cookieParser())
+app.use(express.static(__dirname + '/data'))
 
 // Storage config
 var Storage = multer.diskStorage({
@@ -46,10 +47,6 @@ var Storage = multer.diskStorage({
         callback(null, file.originalname)
     }
 })
-
-var upload = multer({
-    storage: Storage
-}).array('fileUploader', 3) //Field name and max count
 
 // Database connection
 var db
@@ -91,6 +88,7 @@ app.get('/logout', (req, res) => {
     res.clearCookie('login_cloud')
     res.clearCookie('login_dir')
     res.clearCookie('login_username')
+    res.clearCookie('login_id')
     res.redirect('/')
 })
 
@@ -109,14 +107,14 @@ app.get('/page/:page', (req, res) => {
     var page = Number(req.params.page)
     let results = []
     let stats = null
-    let size = ''
     if (dir) {
         request({
             method: 'GET',
             url: `http://127.0.0.1:3000/api/size/${username}`,
             json: true
         }, (error, response) => {
-            size = response.body.size
+            var size = (response.body.size / 1024 / 1024).toFixed(2) + ' MB'
+
             fs.readdir(dir, (err, files) => {
                 for (let i = 0; i < files.length; i++) {
                     stats = fs.statSync(`${dir}/${files[i]}`)
@@ -163,6 +161,13 @@ app.get('/edit/:filename', (req, res) => {
     res.render('edit.ejs', { result: { filename }, fields: ['filename'], loggedInStatus })
 })
 
+app.get('/view/:filename', (req, res) => {
+    if (!req.cookies.login_cloud) res.redirect('/login')
+    var idUser = req.cookies.login_id
+    var filename = req.params.filename
+    var loggedInStatus = `Logged in as ${req.cookies.login_username}`
+    res.render('view.ejs', { result: { filename }, fields: ['filename'], loggedInStatus, filename, idUser })
+})
 
 // API
 
@@ -187,6 +192,7 @@ app.post('/api/login', (req, res) => {
             res.cookie('login_cloud', true, options)
             res.cookie('login_dir', dir, options)
             res.cookie('login_username', result.name, options)
+            res.cookie('login_id', result._id, options)
         }
         else console.log('failed to log in')
         res.redirect('/')
@@ -197,11 +203,11 @@ app.post('/api/register', (req, res) => {
     var name = req.body.name
     var email = req.body.email
     var password = passwordHash.generate(req.body.password)
-    var data = { name, email, password }
+    var data = { name, email, password, premium: false }
     db.collection(table).save(data, (err, result) => {
         logError(err)
         dir = `./data/${result.ops[0]._id}`
-        fs.mkdirSync(dir);
+        fs.mkdirSync(dir)
         console.log('saved to database')
         res.redirect('/')
     })
@@ -213,17 +219,31 @@ app.get('/api/size/:name', (req, res) => {
         result = results[0]
         getSize(`./data/${result._id}`, (err, folderSize) => {
             logError(err)
-            var size = (folderSize / 1024 / 1024).toFixed(2) + ' MB'
-            res.json({ size });
+            var size = folderSize
+            res.json({ size })
         })
     })
 })
 
 app.post('/api/upload', (req, res) => {
-    upload(req, res, (err) => {
-        logError(err)
-        console.log('file uploaded')
-        res.redirect('/')
+    var username = req.cookies.login_username
+    request({
+        method: 'GET',
+        url: `http://127.0.0.1:3000/api/size/${username}`,
+        json: true
+    }, (error, response) => {
+        var size = response.body.size
+        var maxSize = (10*1024*1024)-size
+        var upload = multer({
+            storage: Storage,
+            limits: { fileSize: maxSize }
+        }).array('fileUploader', 3) //Field name and max count
+
+        upload(req, res, (err) => {
+            logError(err)
+            if (!err) console.log('file uploaded')
+            res.redirect('/')
+        })
     })
 })
 

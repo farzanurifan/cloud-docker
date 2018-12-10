@@ -17,7 +17,7 @@
                     <th><%= fields[i] %></th>
                 <% } %>
                 <th>Action</th>
-                <th style='position: absolute; right: 2rem; width: 17em; background-color: white'>Action</th>
+                <th style='position: absolute; right: 2rem; width: 20em; background-color: white'>Action</th>
             <tr>
         </thead>
         <tbody>
@@ -27,8 +27,13 @@
                         <td><%= results[i][fields[j]] %></td>
                     <% } %>
                     <% for(var j=1; j<=2; j++) {%>
-                        <td nowrap style='<% if(j==2) { %> <%= 'position: absolute; right: 2rem;' %> <% } %> width: 17em; background-color: white'>
+                        <td nowrap style='<% if(j==2) { %> <%= 'position: absolute; right: 2rem;' %> <% } %> width: 20em; background-color: white'>
                             <div class='columns is-gapless'>
+                                <div class='column'>
+                                    <a href=<%= '/view/' + results[i].filename.replace(/\s+/g, '%20') %>  class='button is-primary is-small'>
+                                        View
+                                    </a>
+                                </div>
                                 <div class='column'>
                                     <a href=<%= '/edit/' + results[i].filename.replace(/\s+/g, '%20') %>  class='button is-info is-small'>
                                         Rename
