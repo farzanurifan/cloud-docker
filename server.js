@@ -91,8 +91,9 @@ app.get('/login', (req, res) => res.render('login.ejs', { loggedInStatus }))
 app.get('/logout', (req, res) => {
     loggedIn = false
     username = ''
-    dir = ''
-    res.render('login.ejs', { loggedInStatus })
+    dir = './data'
+    res.clearCookie('login_cloud')
+    res.redirect('/')
 })
 
 app.get('/register', (req, res) => res.render('register.ejs', { loggedInStatus }))
@@ -163,11 +164,11 @@ app.post('/api/login', (req, res) => {
     db.collection(table).find({ email }).toArray((err, results) => {
         result = results[0]
         if (!result) return res.redirect('/')
-        
+
         let options = {
             maxAge: 1000 * 60 * 1, // would expire after 15 minutes
         }
-        
+
         loggedIn = passwordHash.verify(password, result.password)
         if (loggedIn) {
             username = result.name.replace(/\s+/g, '%20')
