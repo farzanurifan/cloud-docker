@@ -48,6 +48,10 @@ var Storage = multer.diskStorage({
     }
 })
 
+if (!fs.existsSync('./data')){
+    fs.mkdirSync('./data');
+}
+
 // Database connection
 var db
 MongoClient.connect(uri, { useNewUrlParser: true, }, (err, client) => {
