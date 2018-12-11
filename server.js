@@ -48,7 +48,7 @@ var Storage = multer.diskStorage({
     }
 })
 
-if (!fs.existsSync('./data')){
+if (!fs.existsSync('./data')) {
     fs.mkdirSync('./data');
 }
 
@@ -153,7 +153,7 @@ app.get('/download/:filename', (req, res) => {
     if (!req.cookies.cloud_login) res.redirect('/login')
     var dir = req.cookies.cloud_dir
     var filename = req.params.filename
-//    console.log(`${filename} downloaded`)
+    // console.log(`${filename} downloaded`)
     var file = `${dir}/${filename}`
     res.download(file)
 })
@@ -189,10 +189,8 @@ app.post('/api/login', (req, res) => {
 
         var loggedIn = passwordHash.verify(password, result.password)
         if (loggedIn) {
-            var username = result.name.replace(/\s+/g, '%20')
-            loggedInStatus = `Logged in as ${result.name}`
             dir = `./data/${result._id}`
-//            console.log(`logged in as ${result.name}`)
+            // console.log(`logged in as ${result.name}`)
             res.cookie('cloud_login', true, options)
             res.cookie('cloud_dir', dir, options)
             res.cookie('cloud_username', result.name, options)
@@ -237,11 +235,11 @@ app.post('/api/upload', (req, res) => {
         json: true
     }, (error, response) => {
         var size = response.body.size
-        var maxSize = (10*1024*1024)-size
+        var maxSize = (10 * 1024 * 1024) - size
         var upload = multer({
             storage: Storage,
             limits: { fileSize: maxSize }
-        }).array('fileUploader', 3) //Field name and max count
+        }).array('fileUploader', 3) // Field name and max count
 
         upload(req, res, (err) => {
             logError(err)
@@ -256,7 +254,7 @@ app.put('/api/update/:filename', (req, res) => {
     var newFilename = req.body.filename
     fs.rename(`./data/${filename}`, `./data/${newFilename}`, (err) => {
         logError(err)
-//        console.log(`${filename} was renamed to ${newFilename}`)
+        // console.log(`${filename} was renamed to ${newFilename}`)
         res.redirect('/')
     })
 })
@@ -265,7 +263,7 @@ app.delete('/api/delete/:filename', (req, res) => {
     var filename = req.params.filename
     fs.unlink(`./data/${filename}`, (err) => {
         logError(err)
-//        console.log(`${filename} was deleted`)
+        // console.log(`${filename} was deleted`)
         res.redirect('/')
     })
 })
