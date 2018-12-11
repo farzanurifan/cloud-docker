@@ -16,7 +16,7 @@ const cookieParser = require('cookie-parser')
 
 // MongoDB config
 
-const uri = 'mongodb://localhost:27017'
+const uri = 'mongodb://mongo:27017'
 const database = 'cloud'
 const table = 'myGallery'
 
@@ -153,7 +153,7 @@ app.get('/download/:filename', (req, res) => {
     if (!req.cookies.login_cloud) res.redirect('/login')
     var dir = req.cookies.login_dir
     var filename = req.params.filename
-    console.log(`${filename} downloaded`)
+//    console.log(`${filename} downloaded`)
     var file = `${dir}/${filename}`
     res.download(file)
 })
@@ -192,7 +192,7 @@ app.post('/api/login', (req, res) => {
             var username = result.name.replace(/\s+/g, '%20')
             loggedInStatus = `Logged in as ${result.name}`
             dir = `./data/${result._id}`
-            console.log(`logged in as ${result.name}`)
+//            console.log(`logged in as ${result.name}`)
             res.cookie('login_cloud', true, options)
             res.cookie('login_dir', dir, options)
             res.cookie('login_username', result.name, options)
@@ -256,7 +256,7 @@ app.put('/api/update/:filename', (req, res) => {
     var newFilename = req.body.filename
     fs.rename(`./data/${filename}`, `./data/${newFilename}`, (err) => {
         logError(err)
-        console.log(`${filename} was renamed to ${newFilename}`)
+//        console.log(`${filename} was renamed to ${newFilename}`)
         res.redirect('/')
     })
 })
@@ -265,7 +265,7 @@ app.delete('/api/delete/:filename', (req, res) => {
     var filename = req.params.filename
     fs.unlink(`./data/${filename}`, (err) => {
         logError(err)
-        console.log(`${filename} was deleted`)
+//        console.log(`${filename} was deleted`)
         res.redirect('/')
     })
 })
