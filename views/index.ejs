@@ -1,13 +1,24 @@
 <a href='/logout' class='button is-danger is-small' style='margin-bottom: 2em'>
     Logout
 </a>
+<% if (premiumButton != 'no') { %>
+    <a href='/premium' class='button is-info is-small' style='margin-bottom: 2em'>
+        Be Premium
+    </a>
+<% } %>
+<br>
+<% if (premiumButton != 'no') { %>
+    <small>Anda adalah user free</small>
+<% } else { %>
+    <small>Anda adalah user premium</small>
+<% } %>
+<br>
+<small>Penyimpanan yang digunakan: <%= size %></small>
+<br>
 <br>
 <a href='/add' class='button is-success is-small' style='margin-bottom: 2em'>
     Add
 </a>
-<br>
-<small>Penyimpanan yang digunakan: <%= size %></small>
-<br>
 <br>
 <div style='overflow-x: auto; font-size: 0.8em'>
     <table class='table is-bordered is-striped is-narrow is-hoverable is-fullwidth'>

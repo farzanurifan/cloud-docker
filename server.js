@@ -13,9 +13,9 @@ const getSize = require('get-folder-size')
 const passwordHash = require('password-hash')
 const request = require('request')
 const cookieParser = require('cookie-parser')
+const ObjectId = require('mongodb').ObjectID
 
 // MongoDB config
-
 const uri = 'mongodb://mongo:27017'
 const database = 'cloud'
 const table = 'myGallery'
@@ -50,6 +50,11 @@ var Storage = multer.diskStorage({
 
 if (!fs.existsSync('./data')) {
     fs.mkdirSync('./data');
+}
+
+// Cookies config
+var options = {
+    maxAge: 1000 * 60 * 1, // would expire after 15 minutes
 }
 
 // Database connection
@@ -93,6 +98,7 @@ app.get('/logout', (req, res) => {
     res.clearCookie('cloud_dir')
     res.clearCookie('cloud_username')
     res.clearCookie('cloud_id')
+    res.clearCookie('cloud_premium')
     res.redirect('/')
 })
 
@@ -101,11 +107,32 @@ app.get('/register', (req, res) => {
     res.render('register.ejs', { loggedInStatus: 'Not logged in' })
 })
 
+app.get('/premium', (req, res) => {
+    var id = ObjectId(req.cookies.cloud_id)
+    db.collection(table).find(id).toArray((err, results) => {
+        if (results) {
+            var premium = true
+            var update = { premium }
+            
+            db.collection(table).updateOne({ _id: id }, { $set: update }, (err, result) => {
+                logError(err)
+                res.clearCookie('cloud_premium')
+                res.cookie('cloud_premium', premium, options)
+                res.redirect('/')
+            })
+        }
+    })
+})
+
 app.get('/', (req, res) => res.redirect('/page/1'))
 
 app.get('/page/:page', (req, res) => {
     if (!req.cookies.cloud_login) res.redirect('/login')
     var dir = req.cookies.cloud_dir
+    let premiumButton = 'yes'
+    if (req.cookies.cloud_premium == 'true') {
+        premiumButton = 'no'
+    }
     var loggedInStatus = `Logged in as ${req.cookies.cloud_username}`
     var username = req.cookies.cloud_username
     var page = Number(req.params.page)
@@ -118,7 +145,6 @@ app.get('/page/:page', (req, res) => {
             json: true
         }, (error, response) => {
             var size = (response.body.size / 1024 / 1024).toFixed(2) + ' MB'
-
             fs.readdir(dir, (err, files) => {
                 for (let i = 0; i < files.length; i++) {
                     stats = fs.statSync(`${dir}/${files[i]}`)
@@ -136,7 +162,8 @@ app.get('/page/:page', (req, res) => {
                     last: paginate.last,
                     fields,
                     size,
-                    loggedInStatus
+                    loggedInStatus,
+                    premiumButton
                 })
             })
         })
@@ -153,7 +180,6 @@ app.get('/download/:filename', (req, res) => {
     if (!req.cookies.cloud_login) res.redirect('/login')
     var dir = req.cookies.cloud_dir
     var filename = req.params.filename
-    // console.log(`${filename} downloaded`)
     var file = `${dir}/${filename}`
     res.download(file)
 })
@@ -183,18 +209,14 @@ app.post('/api/login', (req, res) => {
         result = results[0]
         if (!result) return res.redirect('/')
 
-        let options = {
-            maxAge: 1000 * 60 * 1, // would expire after 15 minutes
-        }
-
         var loggedIn = passwordHash.verify(password, result.password)
         if (loggedIn) {
             dir = `./data/${result._id}`
-            // console.log(`logged in as ${result.name}`)
             res.cookie('cloud_login', true, options)
             res.cookie('cloud_dir', dir, options)
             res.cookie('cloud_username', result.name, options)
             res.cookie('cloud_id', result._id, options)
+            res.cookie('cloud_premium', result.premium, options)
         }
         else console.log('failed to log in')
         res.redirect('/')
@@ -210,7 +232,6 @@ app.post('/api/register', (req, res) => {
         logError(err)
         dir = `./data/${result.ops[0]._id}`
         fs.mkdirSync(dir)
-        console.log('saved to database')
         res.redirect('/')
     })
 })
@@ -229,13 +250,19 @@ app.get('/api/size/:name', (req, res) => {
 
 app.post('/api/upload', (req, res) => {
     var username = req.cookies.cloud_username
+    var maxCapacity = 10 * 1024 * 1024
+    var premium = req.cookies.cloud_premium
+    if (premium == 'true') {
+        maxCapacity = maxCapacity * 1024
+    }
+
     request({
         method: 'GET',
         url: `http://127.0.0.1:3000/api/size/${username}`,
         json: true
     }, (error, response) => {
         var size = response.body.size
-        var maxSize = (10 * 1024 * 1024) - size
+        var maxSize = maxCapacity - size
         var upload = multer({
             storage: Storage,
             limits: { fileSize: maxSize }
@@ -243,7 +270,6 @@ app.post('/api/upload', (req, res) => {
 
         upload(req, res, (err) => {
             logError(err)
-            if (!err) console.log('file uploaded')
             res.redirect('/')
         })
     })
@@ -254,7 +280,6 @@ app.put('/api/update/:filename', (req, res) => {
     var newFilename = req.body.filename
     fs.rename(`./data/${filename}`, `./data/${newFilename}`, (err) => {
         logError(err)
-        // console.log(`${filename} was renamed to ${newFilename}`)
         res.redirect('/')
     })
 })
@@ -263,7 +288,6 @@ app.delete('/api/delete/:filename', (req, res) => {
     var filename = req.params.filename
     fs.unlink(`./data/${filename}`, (err) => {
         logError(err)
-        // console.log(`${filename} was deleted`)
         res.redirect('/')
     })
 })
