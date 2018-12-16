@@ -277,17 +277,19 @@ app.post('/api/upload', (req, res) => {
 })
 
 app.put('/api/update/:filename', (req, res) => {
+    var userId = req.cookies.cloud_id
     var filename = req.params.filename
     var newFilename = req.body.filename
-    fs.rename(`./data/${filename}`, `./data/${newFilename}`, (err) => {
+    fs.rename(`./data/${userId}/${filename}`, `./data/${userId}/${newFilename}`, (err) => {
         logError(err)
         res.redirect('/')
     })
 })
 
 app.delete('/api/delete/:filename', (req, res) => {
+    var userId = req.cookies.cloud_id
     var filename = req.params.filename
-    fs.unlink(`./data/${filename}`, (err) => {
+    fs.unlink(`./data/${userId}/${filename}`, (err) => {
         logError(err)
         res.redirect('/')
     })
