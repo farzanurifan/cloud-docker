@@ -195,8 +195,9 @@ app.get('/view/:filename', (req, res) => {
     if (!req.cookies.cloud_login) res.redirect('/login')
     var idUser = req.cookies.cloud_id
     var filename = req.params.filename
+    var extension = filename.toLowerCase().split(".")[1]
     var loggedInStatus = `Logged in as ${req.cookies.cloud_username}`
-    res.render('view.ejs', { result: { filename }, fields: ['filename'], loggedInStatus, filename, idUser })
+    res.render('view.ejs', { result: { filename }, fields: ['filename'], loggedInStatus, filename, idUser, extension })
 })
 
 // API
