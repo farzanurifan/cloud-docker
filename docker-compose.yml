@@ -1,11 +1,8 @@
 version: '2'
 services:
   app:
-    container_name: node
     restart: always
     build: .
-    ports:
-      - '2000:3000'
     links:
       - mongo
   mongo:
