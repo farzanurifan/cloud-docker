@@ -1,16 +1,27 @@
 version: '2'
 services:
   app:
-    container_name: docker-node-mongo
     restart: always
     build: .
-    ports:
-      - '2000:3000'
     links:
       - mongo
+    expose: 
+      - '3000'
   mongo:
     container_name: mongo
     image: mongo
     restart: always
     ports:
-      - '27017:27017'
+      - '27117:27017'
+  reverseproxy:
+     container_name: xbalancer
+     image: nginx-reverseproxy
+     restart: always
+     links: 
+        - redis
+     ports: 
+        - "9999:8080"
+  redis:
+      image: redis
+      container_name: xredis_server
+

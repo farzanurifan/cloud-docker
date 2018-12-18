@@ -9,6 +9,7 @@ const partials = require('express-partials')
 const MongoClient = require('mongodb').MongoClient
 const multer = require('multer')
 const fs = require('fs')
+const ip = require('ip')
 const getSize = require('get-folder-size')
 const passwordHash = require('password-hash')
 const request = require('request')
@@ -104,6 +105,7 @@ app.get('/logout', (req, res) => {
 
 app.get('/register', (req, res) => {
     if (req.cookies.cloud_login) return res.redirect('/')
+    console.log(ip.address())
     res.render('register.ejs', { loggedInStatus: 'Not logged in' })
 })
 
@@ -201,8 +203,9 @@ app.get('/view/:filename', (req, res) => {
 
     var idUser = req.cookies.cloud_id
     var filename = req.params.filename
+    var extension = filename.toLowerCase().split(".")[1]
     var loggedInStatus = `Logged in as ${req.cookies.cloud_username}`
-    res.render('view.ejs', { result: { filename }, fields: ['filename'], loggedInStatus, filename, idUser })
+    res.render('view.ejs', { result: { filename }, fields: ['filename'], loggedInStatus, filename, idUser, extension })
 })
 
 // API
@@ -269,17 +272,19 @@ app.post('/api/upload', (req, res) => {
 })
 
 app.put('/api/update/:filename', (req, res) => {
+    var userId = req.cookies.cloud_id
     var filename = req.params.filename
     var newFilename = req.body.filename
-    fs.rename(`./data/${filename}`, `./data/${newFilename}`, (err) => {
+    fs.rename(`./data/${userId}/${filename}`, `./data/${userId}/${newFilename}`, (err) => {
         logError(err)
         res.redirect('/')
     })
 })
 
 app.delete('/api/delete/:filename', (req, res) => {
+    var userId = req.cookies.cloud_id
     var filename = req.params.filename
-    fs.unlink(`./data/${filename}`, (err) => {
+    fs.unlink(`./data/${userId}/${filename}`, (err) => {
         logError(err)
         res.redirect('/')
     })
