@@ -13,9 +13,15 @@ services:
     restart: always
     ports:
       - '27117:27017'
-  balancer:
-    image: nginx-reverseproxy-fp
-    ports: 
-      - '1024:8080'
-    links: 
-      - app
+  reverseproxy:
+     container_name: xbalancer
+     image: nginx-reverseproxy
+     restart: always
+     links: 
+        - redis
+     ports: 
+        - "9999:8080"
+  redis:
+      image: redis
+      container_name: xredis_server
+
