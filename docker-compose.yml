@@ -5,9 +5,17 @@ services:
     build: .
     links:
       - mongo
+    expose: 
+      - '3000'
   mongo:
     container_name: mongo
     image: mongo
     restart: always
     ports:
       - '27117:27017'
+  balancer:
+    image: nginx-reverseproxy-fp
+    ports: 
+      - '1024:8080'
+    links: 
+      - app
