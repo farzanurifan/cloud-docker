@@ -9,6 +9,7 @@ const partials = require('express-partials')
 const MongoClient = require('mongodb').MongoClient
 const multer = require('multer')
 const fs = require('fs')
+const ip = require('ip')
 const getSize = require('get-folder-size')
 const passwordHash = require('password-hash')
 const request = require('request')
@@ -104,6 +105,7 @@ app.get('/logout', (req, res) => {
 
 app.get('/register', (req, res) => {
     if (req.cookies.cloud_login) return res.redirect('/')
+    console.log(ip.address())
     res.render('register.ejs', { loggedInStatus: 'Not logged in' })
 })
 
