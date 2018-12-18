@@ -1,11 +1,8 @@
 version: '2'
 services:
   app:
-    container_name: node
     restart: always
     build: .
-    ports:
-      - '2000:3000'
     links:
       - mongo
   mongo:
@@ -14,3 +11,13 @@ services:
     restart: always
     ports:
       - '27117:27017'
+  reverseproxy:
+     container_name: xbalancer
+     image: nginx-reverseproxy
+     links: 
+        - redis
+     ports: 
+        - "9999:8080"
+  redis:
+      image: redis
+      container_name: xredis_server
