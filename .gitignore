@@ -1,10 +1,11 @@
 # Custom
 data/
+new_volume/
 
-# Logs
+# Logse
 logs
 *.log
-npm-debug.log*
+npm-debug.log*e
 yarn-debug.log*
 yarn-error.log*
 
