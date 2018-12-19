@@ -17,9 +17,9 @@ const cookieParser = require('cookie-parser')
 const ObjectId = require('mongodb').ObjectID
 
 // MongoDB config
-const uri = 'mongodb://mongo:27017'
-const database = 'cloud'
-const table = 'myGallery'
+var uri = 'mongodb+srv://farzanurifan:bismillah@bdt-6ij3v.mongodb.net/test'
+var database = 'cloud'
+var table = 'myGallery'
 
 // EJS view variables
 const pageItem = 10 // Items per page on table
@@ -85,7 +85,7 @@ const pagination = (results, page) => {
 }
 
 // Start listening on localhost:3000
-app.listen(3000, () => console.log('listening on 3000'))
+app.listen(3001, () => console.log('listening on 3001'))
 
 
 // Routing //
@@ -115,7 +115,7 @@ app.get('/premium', (req, res) => {
         if (results) {
             var premium = true
             var update = { premium }
-            
+
             db.collection(table).updateOne({ _id: id }, { $set: update }, (err, result) => {
                 logError(err)
                 res.clearCookie('cloud_premium')
@@ -129,57 +129,59 @@ app.get('/premium', (req, res) => {
 app.get('/', (req, res) => res.redirect('/page/1'))
 
 app.get('/page/:page', (req, res) => {
-    if (!req.cookies.cloud_login) res.redirect('/login')
-    var dir = req.cookies.cloud_dir
-    let premiumButton = 'yes'
-    if (req.cookies.cloud_premium == 'true') {
-        premiumButton = 'no'
-    }
-    var loggedInStatus = `Logged in as ${req.cookies.cloud_username}`
-    var username = req.cookies.cloud_username
+    var token = req.cookies.cloud_token
+    if (!token) res.redirect('/login')
+
     var page = Number(req.params.page)
-    let results = []
-    let stats = null
-    if (dir) {
-        request({
-            method: 'GET',
-            url: `http://127.0.0.1:3000/api/size/${username}`,
-            json: true
-        }, (error, response) => {
-            var size = (response.body.size / 1024 / 1024).toFixed(2) + ' MB'
-            fs.readdir(dir, (err, files) => {
-                for (let i = 0; i < files.length; i++) {
-                    stats = fs.statSync(`${dir}/${files[i]}`)
-                    results[i] = {
-                        size: stats['size'],
-                        filename: files[i]
-                    }
+    var dir = ''
+    request.post('http://localhost:3000/api/list', {
+        form: {
+            token,
+            dir
+        }
+    }, (error, response, body) => {
+        var data = JSON.parse(body)
+        if (data.message == 'Failed to authenticate token.') {
+            res.clearCookie('cloud_token')
+            res.redirect('/login')
+        }
+        else {
+            var paginate = pagination(data.items.length, page)
+            let results = []
+            for (let i = 0; i < data.items.length; i++) {
+                results[i] = {
+                    size: 'dummy',
+                    filename: data.items[i]
                 }
-                var paginate = pagination(files.length, page)
-                res.render('index.ejs', {
-                    results,
-                    page,
-                    first: paginate.first,
-                    pages: paginate.pages,
-                    last: paginate.last,
-                    fields,
-                    size,
-                    loggedInStatus,
-                    premiumButton
-                })
+            }
+
+            res.render('index.ejs', {
+                results,
+                page,
+                first: paginate.first,
+                pages: paginate.pages,
+                last: paginate.last,
+                fields,
+                size: 'dummy',
+                loggedInStatus: 'dummy',
+                premiumButton: 'no'
             })
-        })
-    }
+        }
+    })
 })
 
 app.get('/add', (req, res) => {
-    if (!req.cookies.cloud_login) res.redirect('/login')
+    var token = req.cookies.cloud_token
+    if (!token) res.redirect('/login')
+
     var loggedInStatus = `Logged in as ${req.cookies.cloud_username}`
     res.render('add.ejs', { fields, loggedInStatus })
 })
 
 app.get('/download/:filename', (req, res) => {
-    if (!req.cookies.cloud_login) res.redirect('/login')
+    var token = req.cookies.cloud_token
+    if (!token) res.redirect('/login')
+
     var dir = req.cookies.cloud_dir
     var filename = req.params.filename
     var file = `${dir}/${filename}`
@@ -187,14 +189,18 @@ app.get('/download/:filename', (req, res) => {
 })
 
 app.get('/edit/:filename', (req, res) => {
-    if (!req.cookies.cloud_login) res.redirect('/login')
+    var token = req.cookies.cloud_token
+    if (!token) res.redirect('/login')
+
     var filename = req.params.filename
     var loggedInStatus = `Logged in as ${req.cookies.cloud_username}`
     res.render('edit.ejs', { result: { filename }, fields: ['filename'], loggedInStatus })
 })
 
 app.get('/view/:filename', (req, res) => {
-    if (!req.cookies.cloud_login) res.redirect('/login')
+    var token = req.cookies.cloud_token
+    if (!token) res.redirect('/login')
+
     var idUser = req.cookies.cloud_id
     var filename = req.params.filename
     var extension = filename.toLowerCase().split(".")[1]
@@ -208,20 +214,16 @@ app.post('/api/login', (req, res) => {
     var email = req.body.email
     var password = req.body.password
 
-    db.collection(table).find({ email }).toArray((err, results) => {
-        result = results[0]
-        if (!result) return res.redirect('/')
-
-        var loggedIn = passwordHash.verify(password, result.password)
-        if (loggedIn) {
-            dir = `./data/${result._id}`
-            res.cookie('cloud_login', true, options)
-            res.cookie('cloud_dir', dir, options)
-            res.cookie('cloud_username', result.name, options)
-            res.cookie('cloud_id', result._id, options)
-            res.cookie('cloud_premium', result.premium, options)
+    request.post('http://localhost:3000/api/login', {
+        form: {
+            email,
+            password
         }
-        else console.log('failed to log in')
+    }, (error, response, body) => {
+        var data = JSON.parse(body)
+        if (data.message == 'OK') {
+            res.cookie('cloud_token', data.token)
+        }
         res.redirect('/')
     })
 })
@@ -229,25 +231,16 @@ app.post('/api/login', (req, res) => {
 app.post('/api/register', (req, res) => {
     var name = req.body.name
     var email = req.body.email
-    var password = passwordHash.generate(req.body.password)
-    var data = { name, email, password, premium: false }
-    db.collection(table).save(data, (err, result) => {
-        logError(err)
-        dir = `./data/${result.ops[0]._id}`
-        fs.mkdirSync(dir)
-        res.redirect('/')
-    })
-})
+    var password = req.body.password
 
-app.get('/api/size/:name', (req, res) => {
-    var name = req.params.name
-    db.collection(table).find({ name }).toArray((err, results) => {
-        result = results[0]
-        getSize(`./data/${result._id}`, (err, folderSize) => {
-            logError(err)
-            var size = folderSize
-            res.json({ size })
-        })
+    request.post('http://localhost:3000/api/register', {
+        form: {
+            name,
+            email,
+            password
+        }
+    }, (error, response, body) => {
+        res.redirect('/')
     })
 })
 
