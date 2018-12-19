@@ -20,6 +20,17 @@ var options = {
 }
 var fs = require('fs')
 
+const multer = require('multer')
+var Storage = dir => multer.diskStorage({
+    destination: (req, file, callback) => {
+        console.log(dir)
+        callback(null, dir)
+    },
+    filename: (req, file, callback) => {
+        callback(null, file.originalname)
+    }
+})
+
 module.exports = {
     login: (req, res) => {
         var email = req.body.email
@@ -33,6 +44,7 @@ module.exports = {
             if (loggedIn) {
                 var token = jwt.sign(result, key, { expiresIn: 5 * 60 }) // dalam detik
                 res.cookie('cloud_token', token, options)
+                res.cookie('cloud_dir', `./data/${result._id}/`, options)
             }
             res.redirect('/')
         })
@@ -51,39 +63,19 @@ module.exports = {
         })
     },
     upload: (req, res) => {
+        var dir = req.cookies.cloud_dir
         var maxCapacity = 10 * 1024 * 1024
-        var file = req.files.file
-        var tmp_path = file.path
-        var token = req.cookies.cloud_token
 
-        var errFunc = () => {
-            fs.unlink(tmp_path)
-        }
+        var size = 10
+        var maxSize = maxCapacity - size
+        var upload = multer({
+            storage: Storage(dir),
+            limits: { fileSize: maxSize }
+        }).array('file', 3) // Field name and max count
 
-        tf.verify(token, key, res, decoded => {
-
-            var id = decoded._id
-            getSize(`./data/${id}`, (err, folderSize) => {
-                var size = folderSize
-                var maxSize = maxCapacity - size
-
-                if (file.size > maxSize) {
-                    fs.unlink(tmp_path, function () {
-                        res.redirect('/')
-                    })
-                } else {
-                    var target_path = `./data/${id}/${file.name}`
-                    fs.rename(tmp_path, target_path, function (err) {
-                        if (err) throw err
-                        fs.unlink(tmp_path, function () {
-                            res.redirect('/')
-                        })
-                    })
-                }
-            })
-
-        },
-            errFunc)
+        upload(req, res, (err) => {
+            res.redirect('/')
+        })
     },
     update: (req, res) => {
         var token = req.cookies.cloud_token
