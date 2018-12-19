@@ -48,11 +48,13 @@
                                         Rename
                                     </a>
                                 </div>
-                                <div class='column'>
-                                    <a href=<%= '/web/api/download/' + results[i].filename.replace(/\s+/g, '%20') %>  class='button is-success is-small'>
-                                        Download
-                                    </a>
-                                </div>
+                                <% if(results[i].filename.replace(/\s+/g, '%20').split('.').length > 1 ) { %>
+                                    <div class='column'>
+                                        <a href=<%= '/web/api/download/' + results[i].filename.replace(/\s+/g, '%20') %>  class='button is-success is-small'>
+                                            Download
+                                        </a>
+                                    </div>
+                                <% } %>
                                 <div class='column'>
                                     <form action=<%= '/web/api/delete/' + results[i].filename.replace(/\s+/g, '%20') + '?_method=DELETE' %> method='POST'>
                                         <button type='submit' class='button is-danger is-small'>Delete</button>
