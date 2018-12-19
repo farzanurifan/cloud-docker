@@ -53,6 +53,7 @@ app.post('/web/api/upload', api.upload)
 app.get('/web/api/download/:filename', api.download)
 app.put('/web/api/update/:filename', api.update)
 app.delete('/web/api/delete/:filename', api.delete)
+app.delete('/web/api/rmdir/:dir', api.rmdir)
 
 // API //
 // Auth

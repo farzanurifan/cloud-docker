@@ -110,5 +110,19 @@ module.exports = {
             var id = decoded._id
             res.download(`./data/${id}/${filename}`)
         })
+    },
+    rmdir: (req, res) => {
+        var token = req.cookies.cloud_token
+
+        tf.verify(token, key, res, decoded => {
+
+            var id = decoded._id
+            var dir = `./data/${id}/${req.params.dir}`
+            if (fs.existsSync(dir)) {
+                fs.rmdirSync(dir)
+            }
+            res.redirect('/')
+
+        })
     }
 }
