@@ -45,6 +45,7 @@ module.exports = {
                 var token = jwt.sign(result, key, { expiresIn: 5 * 60 }) // dalam detik
                 res.cookie('cloud_token', token, options)
                 res.cookie('cloud_dir', `./data/${result._id}/`, options)
+                res.cookie('cloud_id',result._id, options)
             }
             res.redirect('/')
         })
