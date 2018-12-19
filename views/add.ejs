@@ -4,7 +4,7 @@
 <form id="frmUploader" enctype="multipart/form-data" action="/web/api/upload/" method="post">
     <div class="file has-name is-boxed">
         <label class="file-label">
-            <input class="file-input" type="file" name="fileUploader" id="fileUploader" onchange="myFunction()">
+            <input class="file-input" type="file" name="file" id="file" onchange="myFunction()">
             <span class="file-cta">
             <span class="file-icon">
                 <i class="fas fa-upload"></i>
@@ -23,7 +23,7 @@
 
 <script type="text/javascript">
     function myFunction(){
-        var filename = document.getElementById("fileUploader");
+        var filename = document.getElementById("file");
         document.getElementById("namefile").innerHTML=filename.value.replace(/^.*\\/, "");
     }
 </script>
