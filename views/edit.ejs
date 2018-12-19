@@ -1,7 +1,7 @@
 <a href='/' class='button is-danger is-small' style='margin-bottom: 2em'>
     Back
 </a>
-<form action=<%= '/api/update/' + result.filename.replace(/\s+/g, '%20') + '?_method=PUT' %> method='POST' style="max-width: 500px">
+<form action=<%= '/web/api/update/' + result.filename.replace(/\s+/g, '%20') + '?_method=PUT' %> method='POST' style="max-width: 500px">
     <% for(var j=0; j<fields.length; j++) {%>
         <div class='field'>
             <label class="label"><%= fields[j] %></label>
