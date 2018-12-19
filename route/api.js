@@ -33,12 +33,8 @@ module.exports = {
             if (loggedIn) {
                 var token = jwt.sign(result, key, { expiresIn: 5 * 60 }) // dalam detik
                 res.cookie('cloud_token', token, options)
-                res.redirect('/')
             }
-            else {
-                res.json({ message: 'Wrong password ' })
-                res.redirect('/')
-            }
+            res.redirect('/')
         })
     },
     register: (req, res) => {
