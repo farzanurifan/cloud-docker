@@ -79,16 +79,11 @@ module.exports = {
         })
     },
     update: (req, res) => {
-        var token = req.cookies.cloud_token
-        var oldName = req.body.oldName
-        var newName = req.body.newName
-
-        tf.verify(token, key, res, decoded => {
-            var id = decoded._id
-            fs.rename(`./data/${id}/${oldName}`, `./data/${id}/${newName}`, (err) => {
-                if (err) throw err
-                res.redirect('/')
-            })
+        var filename = req.params.filename
+        var newFilename = req.body.filename
+        fs.rename(`./data/${filename}`, `./data/${newFilename}`, (err) => {
+            console.log(`./data/${filename} was renamed to ${newFilename}`)
+            res.redirect('/')
         })
     },
     delete: (req, res) => {
@@ -110,6 +105,20 @@ module.exports = {
         tf.verify(token, key, res, decoded => {
             var id = decoded._id
             res.download(`./data/${id}/${filename}`)
+        })
+    },
+    rmdir: (req, res) => {
+        var token = req.cookies.cloud_token
+
+        tf.verify(token, key, res, decoded => {
+
+            var id = decoded._id
+            var dir = `./data/${id}/${req.params.dir}`
+            if (fs.existsSync(dir)) {
+                fs.rmdirSync(dir)
+            }
+            res.redirect('/')
+
         })
     }
 }

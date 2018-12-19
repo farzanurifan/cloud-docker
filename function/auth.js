@@ -5,7 +5,7 @@ var fs = require('fs-extra')
 var jwt = require('jsonwebtoken')
 var key = require('./token').key
 
-var uri = 'mongodb://mongo:27017'
+var uri = 'mongodb+srv://farzanurifan:bismillah@bdt-6ij3v.mongodb.net/test'
 var database = 'cloud'
 var table = 'myGallery'
 
