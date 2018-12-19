@@ -81,7 +81,8 @@ module.exports = {
     update: (req, res) => {
         var filename = req.params.filename
         var newFilename = req.body.filename
-        fs.rename(`./data/${filename}`, `./data/${newFilename}`, (err) => {
+        var idUser = req.cookies.cloud_id
+        fs.rename(`./data/${idUser}/${filename}`, `./data/${idUser}/${newFilename}`, (err) => {
             console.log(`./data/${filename} was renamed to ${newFilename}`)
             res.redirect('/')
         })
