@@ -29,17 +29,18 @@ module.exports = {
         if (!token) res.redirect('/login')
 
         var page = Number(req.params.page)
-        var dir = ''
-
         
         tf.verify(token, key, res, decoded => {
             var id = decoded._id
-            fs.readdir(`./data/${id}/${dir}`, (err, items) => {
+            fs.readdir(`./data/${id}`, (err, items) => {
                 var paginate = pagination(items.length, page)
                 let results = []
+                let size = 0
                 for (let i = 0; i < items.length; i++) {
+                    stats = fs.statSync(`./data/${id}/${items[i]}`)
+                    size += stats['size']
                     results[i] = {
-                        size: 'dummy',
+                        size: stats['size'],
                         filename: items[i]
                     }
                 }
@@ -51,8 +52,8 @@ module.exports = {
                     pages: paginate.pages,
                     last: paginate.last,
                     fields,
-                    size: 'dummy',
-                    loggedInStatus: 'dummy',
+                    size: size + ' bytes',
+                    loggedInStatus: `Logged in as ${decoded.name}`,
                     premiumButton: 'no'
                 })
             })
