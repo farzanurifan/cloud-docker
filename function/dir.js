@@ -1,5 +1,6 @@
 var tf = require('./token')
 var fs = require('fs-extra')
+var key = tf.key
 
 module.exports = {
     mkdir: (req, res) => {

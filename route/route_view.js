@@ -1,6 +1,9 @@
 var pagination = require('../config/pagination').pagination
 var fields = ['filename', 'size']
 var request = require('request')
+var tf = require('../function/token')
+var key = tf.key
+var fs = require('fs-extra')
 
 module.exports = {
     login: (req, res) => {
@@ -8,6 +11,7 @@ module.exports = {
         res.render('login.ejs', { loggedInStatus: 'Not logged in' })
     },
     logout: (req, res) => {
+        res.clearCookie('cloud_token')
         res.clearCookie('cloud_login')
         res.clearCookie('cloud_dir')
         res.clearCookie('cloud_username')
@@ -26,24 +30,17 @@ module.exports = {
 
         var page = Number(req.params.page)
         var dir = ''
-        request.post('http://localhost:3000/api/list', {
-            form: {
-                token,
-                dir
-            }
-        }, (error, response, body) => {
-            var data = JSON.parse(body)
-            if (data.message == 'Failed to authenticate token.') {
-                res.clearCookie('cloud_token')
-                res.redirect('/login')
-            }
-            else {
-                var paginate = pagination(data.items.length, page)
+
+        
+        tf.verify(token, key, res, decoded => {
+            var id = decoded._id
+            fs.readdir(`./data/${id}/${dir}`, (err, items) => {
+                var paginate = pagination(items.length, page)
                 let results = []
-                for (let i = 0; i < data.items.length; i++) {
+                for (let i = 0; i < items.length; i++) {
                     results[i] = {
                         size: 'dummy',
-                        filename: data.items[i]
+                        filename: items[i]
                     }
                 }
 
@@ -58,7 +55,7 @@ module.exports = {
                     loggedInStatus: 'dummy',
                     premiumButton: 'no'
                 })
-            }
+            })
         })
     },
     add: (req, res) => {
