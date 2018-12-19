@@ -5,7 +5,7 @@ var jwt = require('jsonwebtoken')
 var tf = require('../function/token')
 var key = tf.key
 
-var uri = 'mongodb+srv://farzanurifan:bismillah@bdt-6ij3v.mongodb.net/test'
+var uri = 'mongodb://mongo:27017'
 var database = 'cloud'
 var table = 'myGallery'
 
