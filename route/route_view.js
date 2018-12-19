@@ -1,6 +1,6 @@
-const pagination = require('../config/pagination').pagination
-const fields = ['filename', 'size']
-const request = require('request')
+var pagination = require('../config/pagination').pagination
+var fields = ['filename', 'size']
+var request = require('request')
 
 module.exports = {
     login: (req, res) => {

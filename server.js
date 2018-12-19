@@ -2,18 +2,24 @@
 // Farza Nurifan
 
 // Import
-const bodyParser = require('body-parser')
-const methodOverride = require('method-override')
-const express = require('express')
-const partials = require('express-partials')
-const fs = require('fs')
-const cookieParser = require('cookie-parser')
+var bodyParser = require('body-parser')
+var methodOverride = require('method-override')
+var express = require('express')
+var partials = require('express-partials')
+var fs = require('fs')
+var cookieParser = require('cookie-parser')
 
-const vroute = require('./route/route_view')
-const api = require('./route/api')
+var multipart = require('connect-multiparty')
+var multipartMiddleware = multipart({ uploadDir: './data' })
+
+var vroute = require('./route/route_view')
+var api = require('./route/api')
+var auth = require('./function/auth')
+var file = require('./function/file')
+var dir = require('./function/dir')
 
 // Express config
-const app = express()
+var app = express()
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 app.use(methodOverride('_method'))
@@ -27,7 +33,7 @@ if (!fs.existsSync('./data')) {
 }
 
 // Start listening on localhost:3000
-app.listen(3001, () => console.log('listening on 3001'))
+app.listen(3000, () => console.log('listening on 3000'))
 
 
 // Routing //
@@ -41,12 +47,31 @@ app.get('/edit/:filename', vroute.edit)
 app.get('/view/:filename', vroute.view)
 
 // API
-app.post('/api/login', api.login)
-app.post('/api/register', api.register)
-app.post('/api/upload', api.upload)
-app.get('/api/download/:filename', api.download)
-app.put('/api/update/:filename', api.update)
-app.delete('/api/delete/:filename', api.delete)
+app.post('/web/api/login', api.login)
+app.post('/web/api/register', api.register)
+app.post('/web/api/upload', api.upload)
+app.get('/web/api/download/:filename', api.download)
+app.put('/web/api/update/:filename', api.update)
+app.delete('/web/api/delete/:filename', api.delete)
+
+// API //
+// Auth
+app.post('/api/register', auth.register)
+app.post('/api/login', auth.login)
+
+// File
+app.post('/api/upload', multipartMiddleware, file.upload)
+app.post('/api/download', file.download)
+app.post('/api/delete', file.delete)
+app.post('/api/rename', file.rename)
+app.post('/api/list', file.list)
+app.post('/api/movefile', file.movefile)
+
+// Dir
+app.post('/api/mkdir', dir.mkdir)
+app.post('/api/rmdir', dir.rmdir)
+app.post('/api/listdir', dir.listdir)
+app.post('/api/movedir', dir.movedir)
 
 
 // app.get('/premium', (req, res) => {

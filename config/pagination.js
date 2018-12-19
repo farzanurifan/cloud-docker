@@ -1,4 +1,4 @@
-const pageItem = 10 // Items per page on table
+var pageItem = 10 // Items per page on table
 
 module.exports = {
     pagination: (results, page) => {
