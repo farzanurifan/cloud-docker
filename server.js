@@ -72,6 +72,8 @@ app.post('/api/mkdir', dir.mkdir)
 app.post('/api/rmdir', dir.rmdir)
 app.post('/api/listdir', dir.listdir)
 app.post('/api/movedir', dir.movedir)
+app.post('/api/sizedir', dir.sizedir)
+
 
 
 // app.get('/premium', (req, res) => {
